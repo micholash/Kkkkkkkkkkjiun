@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>야생의 정지운 키우기</title>
+    <title>야생의 비둘기 키우기</title>
     <style>
         /* --- CSS 스타일 --- */
         :root {
@@ -208,7 +208,7 @@
 <body>
 
     <div class="header">
-        <h1>🕊️ 야생의 정지운</h1>
+        <h1>🕊️ 야생의 비둘기</h1>
         <div class="score-board">
             최고 레벨: <span id="max-level">0</span>
         </div>
@@ -218,14 +218,14 @@
 
     <div class="controls">
         <button class="btn book-btn" id="bookBtn">📖 도감</button>
-        <button class="btn spawn-btn" id="spawnBtn">🥚 알 낳기</button>
+        <button class="btn spawn-btn" id="spawnBtn">🥚 Lv.1 생성</button>
     </div>
 
     <!-- 모달들 -->
     <div id="unlockModal" class="modal">
         <div class="modal-content">
             <span class="modal-badge">✨ NEW! 새로운 발견!</span><br>
-            <img id="unlock-img" class="modal-image" src="" alt="정지운">
+            <img id="unlock-img" class="modal-image" src="" alt="비둘기">
             <div id="unlock-title" class="modal-title"></div>
             <div id="unlock-desc" class="modal-desc"></div>
             <button class="confirm-btn" id="unlockCloseBtn">확인</button>
@@ -235,7 +235,7 @@
     <div id="bookModal" class="modal">
         <div class="modal-content">
             <button class="close-btn-top" id="bookCloseTopBtn">&times;</button>
-            <div class="modal-title">정지운 도감</div>
+            <div class="modal-title">비둘기 도감</div>
             <p style="font-size:12px; color:#888; margin-bottom:15px;">터치하여 설명을 확인하세요.</p>
             <div class="book-grid" id="bookGrid"></div>
         </div>
@@ -243,7 +243,7 @@
 
     <div id="detailModal" class="modal">
         <div class="modal-content">
-            <img id="detail-img" class="modal-image" src="" alt="정지운">
+            <img id="detail-img" class="modal-image" src="" alt="비둘기">
             <div id="detail-title" class="modal-title"></div>
             <div id="detail-desc" class="modal-desc"></div>
             <button class="confirm-btn" id="detailCloseBtn">닫기</button>
@@ -253,25 +253,25 @@
     <script>
         // ★ 데이터 설정 (깃허브에 img1.png ~ img19.png, img523.png를 올려야 함) ★
         const pigeonTypes = [
-            { level: 1, img: "img1.png", name: "정지운", desc: "아직은 평범한 정지운입니다." },
-            { level: 2, img: "img2.png", name: "정지운지", desc: "슬슬 평범하지 않습니다." },
+            { level: 1, img: "img1.png", name: "비둘기 알", desc: "아직은 평범한 알입니다." },
+            { level: 2, img: "img2.png", name: "깨진 알", desc: "금이 갔습니다! 곧 나옵니다." },
             { level: 3, img: "img3.png", name: "아기 새", desc: "삐약삐약! 귀여운 아기 새입니다." },
-            { level: 4, img: "img4.png", name: "정지운", desc: "흔히 보는 평범한 정지운입니다." },
+            { level: 4, img: "img4.png", name: "비둘기", desc: "흔히 보는 평범한 비둘기입니다." },
             { level: 5, img: "img5.png", name: "빵둘기", desc: "빵을 너무 좋아해 몸이 변했습니다." },
             { level: 6, img: "img6.png", name: "닭둘기", desc: "너무 많이 먹어 날 수 없습니다." },
             { level: 7, img: "img7.png", name: "앵무둘기", desc: "화려한 색으로 염색했습니다." },
-            { level: 8, img: "img8.png", name: "백조둘기", desc: "우아함을 추구하는 정지운입니다." },
+            { level: 8, img: "img8.png", name: "백조둘기", desc: "우아함을 추구하는 비둘기입니다." },
             { level: 9, img: "img9.png", name: "홍학둘기", desc: "다리가 길어지고 핑크색이 되었습니다." },
             { level: 10, img: "img10.png", name: "공작둘기", desc: "관심받기를 좋아하는 관종입니다." },
-            { level: 11, img: "img11.png", name: "부엉지운", desc: "밤에만 활동하는 야행성입니다." },
+            { level: 11, img: "img11.png", name: "부엉둘기", desc: "밤에만 활동하는 야행성입니다." },
             { level: 12, img: "img12.png", name: "독수리", desc: "하늘의 제왕이 되었습니다." },
             { level: 13, img: "img13.png", name: "오리둘기", desc: "물갈퀴가 생겨 수영을 잘합니다." },
             { level: 14, img: "img14.png", name: "박쥐둘기", desc: "동굴에 서식하며 초음파를 씁니다." },
             { level: 15, img: "img15.png", name: "용둘기", desc: "전설 속의 존재가 되었습니다." },
-            { level: 16, img: "img16.png", name: "전투기", desc: "음속으로 날아가는 기계 정지운입니다." },
+            { level: 16, img: "img16.png", name: "전투기", desc: "음속으로 날아가는 기계 비둘기입니다." },
             { level: 17, img: "img17.png", name: "헬기", desc: "제자리 비행이 가능합니다." },
-            { level: 18, img: "img18.png", name: "로켓", desc: "?." },
-            { level: 19, img: "img19.png", name: "히틀러 지운", desc: "자신의 롤모델을 따라한 정지운." },
+            { level: 18, img: "img18.png", name: "로켓", desc: "우주로 갈 준비를 마쳤습니다." },
+            { level: 19, img: "img19.png", name: "UFO", desc: "외계 문명의 힘을 얻었습니다." },
             // ★ 중요: 20레벨 대신 523레벨로 설정 ★
             { level: 523, img: "img523.png", name: "우주신", desc: "모든 차원을 다스리는 창조신입니다." }
         ];
@@ -299,6 +299,22 @@
         function getPigeonData(level) {
             return pigeonTypes.find(p => p.level === level);
         }
+
+        // ★ [NEW] 성장 가속: 현재 스폰되어야 할 레벨 계산 ★
+        function getSpawnLevel() {
+            if (maxUnlockedLevel >= 15) return 13;
+            if (maxUnlockedLevel >= 10) return 8;
+            if (maxUnlockedLevel >= 5) return 3;
+            return 1;
+        }
+
+        // 버튼 텍스트 업데이트 함수
+        function updateSpawnButton() {
+            spawnBtn.innerText = `🥚 Lv.${getSpawnLevel()} 생성`;
+        }
+
+        // 초기 실행 시 버튼 텍스트 업데이트
+        updateSpawnButton();
 
         // --- 게임 로직 ---
         function getRandomPosition() {
@@ -336,10 +352,11 @@
 
         spawnBtn.addEventListener('click', () => {
             if (document.querySelectorAll('.item').length >= 40) {
-                alert("정지운이 너무 많아요!");
+                alert("비둘기가 너무 많아요!");
                 return;
             }
-            createItem(1);
+            // ★ 수정됨: 계산된 레벨로 아이템 생성
+            createItem(getSpawnLevel());
             spawnBtn.disabled = true;
             setTimeout(() => { spawnBtn.disabled = false; }, 200);
         });
@@ -430,11 +447,14 @@
 
         // --- 해금 및 도감 로직 ---
         function checkAndUnlockLevel(level) {
-            // 저장된 최고 레벨보다 높으면 해금 (523은 19보다 크므로 정상 작동)
             if (level > maxUnlockedLevel) {
                 maxUnlockedLevel = level;
                 localStorage.setItem('pigeon_max_level', maxUnlockedLevel);
                 maxLevelDisplay.innerText = "Lv." + maxUnlockedLevel;
+                
+                // 새로운 레벨 도달 시 버튼 텍스트 업데이트
+                updateSpawnButton();
+                
                 showUnlockModal(level);
             }
         }
@@ -455,12 +475,8 @@
             pigeonTypes.forEach(data => {
                 const slot = document.createElement('div');
                 
-                // 해금 여부 체크 (523 레벨 처리 포함)
                 let isUnlocked = false;
                 if (data.level <= maxUnlockedLevel) isUnlocked = true;
-                // 예외처리: maxUnlockedLevel이 19인데 523을 체크하면 안됨. 
-                // 단순히 숫자 비교만 하면 523 > 19라서 안 열림. 정상.
-                // 만약 maxUnlockedLevel이 523이면 다 열림. 정상.
 
                 if (isUnlocked) {
                     slot.classList.add('book-item', 'unlocked');
@@ -495,8 +511,12 @@
             if (e.target == detailModal) detailModal.style.display = 'none';
         }
 
-        // 시작 시 기본 아이템 생성
-        setTimeout(() => { createItem(1); createItem(1); }, 100);
+        // 시작 시 기본 아이템 생성 (현재 레벨에 맞춰서)
+        setTimeout(() => { 
+            const startLevel = getSpawnLevel();
+            createItem(startLevel); 
+            createItem(startLevel); 
+        }, 100);
     </script>
 </body>
 </html>
