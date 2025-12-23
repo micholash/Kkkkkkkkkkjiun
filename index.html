@@ -6,9 +6,15 @@
     <title>야생의 비둘기 키우기</title>
     <style>
         /* --- CSS 스타일 --- */
+        :root {
+            --item-size: 70px;
+            --main-color: #FF9800;
+            --bg-color: #87CEEB;
+        }
+
         body {
             font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
-            background-color: #87CEEB;
+            background-color: var(--bg-color);
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,22 +23,22 @@
             height: 100vh;
             overflow: hidden;
             user-select: none;
-            touch-action: none; /* 모바일 스크롤 방지 */
+            touch-action: none;
         }
 
         .header {
             text-align: center;
-            margin-top: 15px;
+            padding-top: 15px;
             color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            z-index: 100;
-            pointer-events: none; /* 클릭 통과 */
+            z-index: 10;
+            pointer-events: none;
         }
 
         h1 { margin: 5px 0; font-size: 24px; }
         .score-board { font-size: 14px; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 15px; display: inline-block;}
 
-        /* 자유 게임 영역 (들판) */
+        /* 자유 게임 영역 */
         #game-area {
             position: relative;
             flex-grow: 1;
@@ -45,11 +51,11 @@
             touch-action: none;
         }
 
-        /* 비둘기 아이템 */
+        /* 아이템 스타일 */
         .item {
             position: absolute;
-            width: 70px;
-            height: 70px;
+            width: var(--item-size);
+            height: var(--item-size);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -61,9 +67,9 @@
             touch-action: none;
             z-index: 10;
             user-select: none;
+            overflow: hidden;
         }
 
-        /* 드래그 중 효과 */
         .item.dragging {
             opacity: 0.8;
             z-index: 1000;
@@ -72,43 +78,170 @@
             cursor: grabbing;
         }
 
-        .item .emoji { font-size: 32px; line-height: 1; pointer-events: none; }
+        .item .image-container {
+            width: 70%;
+            height: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .item .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
         .item .level { font-size: 11px; color: #555; font-weight: bold; margin-top: 2px; pointer-events: none; }
 
-        /* 등장 애니메이션 */
+        .pop-anim { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
         @keyframes pop {
             0% { transform: scale(0) rotate(-30deg); }
             80% { transform: scale(1.1) rotate(10deg); }
             100% { transform: scale(1) rotate(0deg); }
         }
-        .pop-anim { animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-        /* 하단 컨트롤 */
+        /* 하단 컨트롤 바 */
         .controls {
-            padding: 15px;
+            position: fixed;
+            bottom: 0;
+            left: 0;
             width: 100%;
+            padding: 15px;
             box-sizing: border-box;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             z-index: 100;
             border-top-left-radius: 20px;
             border-top-right-radius: 20px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px; /* 버튼 사이 간격 */
         }
 
-        .spawn-btn {
-            width: 100%;
+        .btn {
             padding: 15px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #fff;
-            background-color: #FF9800;
             border: none;
             border-radius: 15px;
-            box-shadow: 0 4px 0 #F57C00;
             cursor: pointer;
             transition: transform 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
-        .spawn-btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* 알 낳기 버튼 */
+        .spawn-btn {
+            flex: 2; /* 더 넓게 */
+            background-color: var(--main-color);
+        }
+        .spawn-btn:disabled { background-color: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        /* 도감 버튼 */
+        .book-btn {
+            flex: 1;
+            background-color: #4CAF50;
+        }
+
+        /* --- 모달 공통 스타일 --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+            max-height: 80vh;
+            overflow-y: auto; /* 내용 길면 스크롤 */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            animation: modal-pop 0.3s ease-out;
+            position: relative;
+        }
+        @keyframes modal-pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .close-btn-top {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* 설명창 스타일 */
+        .modal-image { width: 120px; height: 120px; margin-bottom: 10px; object-fit: contain; }
+        .modal-title { font-size: 24px; font-weight: bold; margin: 10px 0; color: #333; }
+        .modal-badge { 
+            display: inline-block; 
+            background: #FFEB3B; 
+            color: #333; 
+            padding: 4px 10px; 
+            border-radius: 10px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+        }
+        .modal-desc { font-size: 16px; color: #666; line-height: 1.6; margin-bottom: 20px; word-break: keep-all; }
+        .confirm-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 도감 그리드 스타일 */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .book-item {
+            aspect-ratio: 1/1;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        .book-item.unlocked { background-color: #fff; border-color: #ddd; }
+        .book-item.locked { background-color: #e0e0e0; opacity: 0.6; cursor: default; }
+        .book-item img { width: 70%; height: 70%; object-fit: contain; }
+        .book-item .level-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 10px;
+            color: #888;
+        }
 
     </style>
 </head>
@@ -117,116 +250,155 @@
     <div class="header">
         <h1>🕊️ 야생의 비둘기</h1>
         <div class="score-board">
-            최고: <span id="max-level-name">없음</span> (Lv.<span id="max-level">0</span>)
+            발견한 비둘기: <span id="max-level">0</span> / 20
         </div>
     </div>
 
     <div id="game-area">
-        <!-- 비둘기들이 여기서 뛰어놀아요 -->
+        <!-- 비둘기 생성 영역 -->
     </div>
 
     <div class="controls">
-        <button class="spawn-btn" id="spawnBtn">
-            🥚 알 낳기 (Click)
-        </button>
+        <button class="btn book-btn" id="bookBtn">📖 도감</button>
+        <button class="btn spawn-btn" id="spawnBtn">🥚 알 낳기</button>
+    </div>
+
+    <!-- 1. 새로운 비둘기 발견 모달 -->
+    <div id="unlockModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-badge">✨ NEW! 새로운 비둘기 발견!</span>
+            <br>
+            <img id="unlock-img" class="modal-image" src="" alt="비둘기">
+            <div id="unlock-title" class="modal-title"></div>
+            <div id="unlock-desc" class="modal-desc"></div>
+            <button class="confirm-btn" id="unlockCloseBtn">확인</button>
+        </div>
+    </div>
+
+    <!-- 2. 도감 모달 -->
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn-top" id="bookCloseTopBtn">&times;</button>
+            <div class="modal-title">비둘기 도감</div>
+            <p style="font-size:12px; color:#888; margin-bottom:15px;">발견한 비둘기를 눌러 설명을 보세요.</p>
+            <div class="book-grid" id="bookGrid">
+                <!-- JS로 생성됨 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 도감 상세 보기 모달 (도감에서 클릭 시) -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <img id="detail-img" class="modal-image" src="" alt="비둘기">
+            <div id="detail-title" class="modal-title"></div>
+            <div id="detail-desc" class="modal-desc"></div>
+            <button class="confirm-btn" id="detailCloseBtn">닫기</button>
+        </div>
     </div>
 
     <script>
-        // --- 20단계 비둘기 도감 ---
+        // --- 데이터 (이미지 주소는 꼭 깃허브 URL로 교체하세요!) ---
         const pigeonTypes = [
-            { level: 1, emoji: "🥚", name: "비둘기 알" },
-            { level: 2, emoji: "🐣", name: "깨진 알" },
-            { level: 3, emoji: "🐥", name: "아기 새" },
-            { level: 4, emoji: "🐦", name: "비둘기" },
-            { level: 5, emoji: "🥖", name: "빵둘기" },
-            { level: 6, emoji: "🐔", name: "닭둘기" },
-            { level: 7, emoji: "🦜", name: "앵무둘기" },
-            { level: 8, emoji: "🦢", name: "백조둘기" },
-            { level: 9, emoji: "🦩", name: "홍학둘기" },
-            { level: 10, emoji: "🦚", name: "공작둘기" },
-            { level: 11, emoji: "🦉", name: "부엉둘기" },
-            { level: 12, emoji: "🦅", name: "독수리" },
-            { level: 13, emoji: "🦆", name: "오리둘기" },
-            { level: 14, emoji: "🦇", name: "박쥐둘기" },
-            { level: 15, emoji: "🐉", name: "용둘기" },
-            { level: 16, emoji: "✈️", name: "전투기" },
-            { level: 17, emoji: "🚁", name: "헬기" },
-            { level: 18, emoji: "🚀", name: "로켓" },
-            { level: 19, emoji: "🛸", name: "UFO" },
-            { level: 20, emoji: "🪐", name: "우주신" }
+            { level: 1, image_url: "https://cdn-icons-png.flaticon.com/512/3199/3199887.png", name: "비둘기 알", description: "아직은 평범한 알입니다. 따뜻하게 품어주면 깨어날까요?" },
+            { level: 2, image_url: "https://cdn-icons-png.flaticon.com/512/3199/3199893.png", name: "깨진 알", description: "쩍! 금이 가기 시작했습니다. 안에 무언가 움직이고 있어요!" },
+            { level: 3, image_url: "https://cdn-icons-png.flaticon.com/512/3199/3199912.png", name: "아기 새", description: "삐약삐약! 아주 작고 귀여운 아기 비둘기가 태어났습니다." },
+            { level: 4, image_url: "https://cdn-icons-png.flaticon.com/512/2696/2696307.png", name: "비둘기", description: "우리가 공원에서 흔히 마주치는 평범한 비둘기입니다. 구구!" },
+            { level: 5, image_url: "https://cdn-icons-png.flaticon.com/512/3075/3075973.png", name: "빵둘기", description: "빵을 너무 좋아한 나머지 몸이 바게트 빵이 되어버렸습니다." },
+            { level: 6, image_url: "https://cdn-icons-png.flaticon.com/512/1864/1864514.png", name: "닭둘기", description: "너무 잘 먹어서 날지 못합니다. 뒤뚱뒤뚱 걸어다닙니다." },
+            { level: 7, image_url: "https://cdn-icons-png.flaticon.com/512/616/616430.png", name: "앵무둘기", description: "화려한 깃털을 동경하여 무지개색으로 염색했습니다." },
+            { level: 8, image_url: "https://cdn-icons-png.flaticon.com/512/3063/3063188.png", name: "백조둘기", description: "자신이 백조라고 믿는 비둘기입니다. 호수 위를 떠다닙니다." },
+            { level: 9, image_url: "https://cdn-icons-png.flaticon.com/512/2913/2913520.png", name: "홍학둘기", description: "다리가 길어지고 핑크색이 되었습니다. 한 발로 서기를 좋아합니다." },
+            { level: 10, image_url: "https://cdn-icons-png.flaticon.com/512/2978/2978522.png", name: "공작둘기", description: "관심 받는 것을 좋아합니다. 화려한 꼬리를 활짝 펴고 다닙니다." },
+            { level: 11, image_url: "https://cdn-icons-png.flaticon.com/512/2622/2622324.png", name: "부엉둘기", description: "낮에는 자고 밤에만 활동합니다. 눈이 아주 큽니다." },
+            { level: 12, image_url: "https://cdn-icons-png.flaticon.com/512/2938/2938189.png", name: "독수리", description: "더 이상 도시의 비둘기가 아닙니다. 하늘의 제왕이 되었습니다." },
+            { level: 13, image_url: "https://cdn-icons-png.flaticon.com/512/2696/2696319.png", name: "오리둘기", description: "꽥꽥? 정체성에 혼란이 온 비둘기입니다. 물갈퀴가 생겼습니다." },
+            { level: 14, image_url: "https://cdn-icons-png.flaticon.com/512/1998/1998632.png", name: "박쥐둘기", description: "어둠의 힘을 얻어 동굴에서 서식합니다. 초음파를 씁니다." },
+            { level: 15, image_url: "https://cdn-icons-png.flaticon.com/512/3306/3306290.png", name: "용둘기", description: "전설 속의 존재가 되었습니다. 가끔 입에서 불을 뿜습니다." },
+            { level: 16, image_url: "https://cdn-icons-png.flaticon.com/512/2503/2503394.png", name: "전투기", description: "기계화에 성공했습니다. 음속으로 하늘을 날아갑니다." },
+            { level: 17, image_url: "https://cdn-icons-png.flaticon.com/512/3022/3022265.png", name: "헬기", description: "제자리 비행이 가능한 최첨단 비둘기입니다. 프로펠러가 달렸습니다." },
+            { level: 18, image_url: "https://cdn-icons-png.flaticon.com/512/3199/3199904.png", name: "로켓", description: "지구의 중력을 벗어날 준비를 마쳤습니다. 3, 2, 1, 발사!" },
+            { level: 19, image_url: "https://cdn-icons-png.flaticon.com/512/2895/2895839.png", name: "UFO", description: "외계 문명과 접촉하여 알 수 없는 힘을 얻었습니다." },
+            { level: 20, image_url: "https://cdn-icons-png.flaticon.com/512/3418/3418205.png", name: "우주신", description: "모든 차원의 비둘기를 다스리는 창조신입니다. 게임 클리어!" }
         ];
 
+        // --- 전역 변수 및 설정 ---
         const gameArea = document.getElementById('game-area');
-        const maxLevelSpan = document.getElementById('max-level');
-        const maxLevelNameSpan = document.getElementById('max-level-name');
+        const maxLevelDisplay = document.getElementById('max-level');
         const spawnBtn = document.getElementById('spawnBtn');
+        const bookBtn = document.getElementById('bookBtn');
+        const ITEM_SIZE = 70;
 
-        let highestLevel = 0;
+        // 모달 요소들
+        const unlockModal = document.getElementById('unlockModal');
+        const bookModal = document.getElementById('bookModal');
+        const detailModal = document.getElementById('detailModal');
+
         let activeItem = null;
-        let startX = 0, startY = 0; // 드래그 시작 시 마우스-아이템 간격
-        let initialPos = { x: 0, y: 0 }; // 원래 위치 (되돌아가기용)
-        const ITEM_SIZE = 70; // 아이템 크기
+        let startX = 0, startY = 0;
+        let initialPos = { x: 0, y: 0 };
+        
+        // ★ 저장 데이터 불러오기 (해금된 최고 레벨) ★
+        let maxUnlockedLevel = parseInt(localStorage.getItem('pigeon_max_level')) || 1;
+        
+        // 초기 UI 업데이트
+        maxLevelDisplay.innerText = maxUnlockedLevel;
 
-        // --- 1. 랜덤 위치 계산 ---
+        // --- 1. 게임 로직 (드래그 & 생성) ---
+        
         function getRandomPosition() {
-            const areaWidth = gameArea.clientWidth;
-            const areaHeight = gameArea.clientHeight;
-            // 화면 밖으로 안 나가게 여백 줌
-            const x = Math.random() * (areaWidth - ITEM_SIZE);
-            const y = Math.random() * (areaHeight - ITEM_SIZE);
+            const x = Math.random() * (gameArea.clientWidth - ITEM_SIZE);
+            const y = Math.random() * (gameArea.clientHeight - ITEM_SIZE);
             return { x, y };
         }
 
-        // --- 2. 아이템 생성 ---
         function createItem(level, x = null, y = null) {
             const data = pigeonTypes[level - 1];
             const item = document.createElement('div');
             item.classList.add('item');
             item.dataset.level = level;
 
-            // 좌표 설정
             const pos = (x === null || y === null) ? getRandomPosition() : { x, y };
             item.style.left = `${pos.x}px`;
             item.style.top = `${pos.y}px`;
 
-            item.innerHTML = `<div class="emoji">${data.emoji}</div><div class="level">Lv.${level}</div>`;
+            item.innerHTML = `
+                <div class="image-container">
+                    <img src="${data.image_url}" alt="${data.name}" draggable="false">
+                </div>
+                <div class="level">Lv.${level}</div>
+            `;
             
-            // 애니메이션
             item.classList.add('pop-anim');
             item.addEventListener('animationend', () => item.classList.remove('pop-anim'));
-
-            // 포인터 이벤트 연결 (마우스/터치 통합)
             item.addEventListener('pointerdown', handlePointerDown);
             
             gameArea.appendChild(item);
-            updateScore(level);
         }
 
-        // --- 3. 버튼 클릭 ---
         spawnBtn.addEventListener('click', () => {
-            if (document.querySelectorAll('.item').length >= 50) {
-                alert("비둘기가 너무 많아요! 합쳐주세요.");
+            if (document.querySelectorAll('.item').length >= 30) {
+                alert("비둘기가 너무 많아요!");
                 return;
             }
             createItem(1);
+            spawnBtn.disabled = true;
+            setTimeout(() => { spawnBtn.disabled = false; }, 300);
         });
 
-        // --- 4. 드래그 로직 (핵심) ---
+        // --- 드래그 핸들러 ---
         function handlePointerDown(e) {
             e.preventDefault();
             activeItem = e.currentTarget;
-            
-            // 현재 위치 저장 (실패 시 복귀용)
             initialPos.x = parseFloat(activeItem.style.left);
             initialPos.y = parseFloat(activeItem.style.top);
             
-            // 터치한 지점과 아이템 왼쪽상단의 거리 차이 계산
             const rect = activeItem.getBoundingClientRect();
             startX = e.clientX - rect.left;
             startY = e.clientY - rect.top;
 
             activeItem.classList.add('dragging');
-            activeItem.setPointerCapture(e.pointerId); // 포인터 가두기
+            activeItem.setPointerCapture(e.pointerId);
 
             activeItem.addEventListener('pointermove', handlePointerMove);
             activeItem.addEventListener('pointerup', handlePointerUp);
@@ -235,29 +407,22 @@
         function handlePointerMove(e) {
             if (!activeItem) return;
             e.preventDefault();
-
-            // 부모(game-area) 기준 좌표 계산
             const areaRect = gameArea.getBoundingClientRect();
             let newX = e.clientX - areaRect.left - startX;
             let newY = e.clientY - areaRect.top - startY;
-
-            // 화면 밖 제한
             newX = Math.max(0, Math.min(newX, gameArea.clientWidth - ITEM_SIZE));
             newY = Math.max(0, Math.min(newY, gameArea.clientHeight - ITEM_SIZE));
-
             activeItem.style.left = `${newX}px`;
             activeItem.style.top = `${newY}px`;
         }
 
         function handlePointerUp(e) {
             if (!activeItem) return;
-            
             activeItem.removeEventListener('pointermove', handlePointerMove);
             activeItem.removeEventListener('pointerup', handlePointerUp);
             activeItem.classList.remove('dragging');
             activeItem.releasePointerCapture(e.pointerId);
 
-            // 충돌 체크
             const targetItem = findCollidingItem(activeItem);
 
             if (targetItem) {
@@ -265,52 +430,35 @@
                 const level2 = parseInt(targetItem.dataset.level);
 
                 if (level1 === level2 && level1 < 20) {
-                    // [합성 성공]
+                    // 합성 성공
                     const newX = parseFloat(targetItem.style.left);
                     const newY = parseFloat(targetItem.style.top);
-                    
                     activeItem.remove();
                     targetItem.remove();
-                    createItem(level1 + 1, newX, newY);
+                    
+                    const newLevel = level1 + 1;
+                    createItem(newLevel, newX, newY);
+                    
+                    // ★ 중요: 처음 만드는 레벨이라면 설명창 띄우기 & 저장 ★
+                    checkAndUnlockLevel(newLevel);
+
                 } else {
-                    // [합성 실패] 다른 레벨이면 원래 자리로
                     returnToInitialPos(activeItem);
                 }
-            } else {
-                // [빈 공간] 그냥 거기에 둠 (아무것도 안 함)
             }
-
             activeItem = null;
         }
 
-        // 충돌 감지 함수
         function findCollidingItem(currentItem) {
             const currentRect = currentItem.getBoundingClientRect();
-            const currentCenter = { 
-                x: currentRect.left + currentRect.width/2, 
-                y: currentRect.top + currentRect.height/2 
-            };
-
+            const currentCenter = { x: currentRect.left + currentRect.width/2, y: currentRect.top + currentRect.height/2 };
             const items = document.querySelectorAll('.item');
             for (const item of items) {
                 if (item === currentItem) continue;
-
                 const rect = item.getBoundingClientRect();
-                const itemCenter = { 
-                    x: rect.left + rect.width/2, 
-                    y: rect.top + rect.height/2 
-                };
-
-                // 두 점 사이 거리
-                const dist = Math.sqrt(
-                    Math.pow(currentCenter.x - itemCenter.x, 2) + 
-                    Math.pow(currentCenter.y - itemCenter.y, 2)
-                );
-
-                // 거리 50px 이내면 충돌로 간주
-                if (dist < 50) { 
-                    return item;
-                }
+                const itemCenter = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+                const dist = Math.sqrt(Math.pow(currentCenter.x - itemCenter.x, 2) + Math.pow(currentCenter.y - itemCenter.y, 2));
+                if (dist < ITEM_SIZE * 0.7) return item;
             }
             return null;
         }
@@ -322,18 +470,83 @@
             setTimeout(() => { item.style.transition = ''; }, 200);
         }
 
-        function updateScore(level) {
-            if (level > highestLevel) {
-                highestLevel = level;
-                const data = pigeonTypes[level - 1];
-                maxLevelSpan.innerText = level;
-                maxLevelNameSpan.innerText = data.name;
+        // --- 2. 해금 & 저장 로직 ---
+
+        function checkAndUnlockLevel(level) {
+            // 현재 최고 레벨보다 높은 레벨을 만들었을 때만 실행
+            if (level > maxUnlockedLevel) {
+                maxUnlockedLevel = level;
+                localStorage.setItem('pigeon_max_level', maxUnlockedLevel);
+                maxLevelDisplay.innerText = maxUnlockedLevel;
+                
+                // 축하 모달 띄우기
+                showUnlockModal(level);
             }
         }
-        
-        // 시작 시 알 3개 제공
+
+        // --- 3. 모달 관련 함수들 ---
+
+        // (1) 새로운 발견 모달
+        function showUnlockModal(level) {
+            const data = pigeonTypes[level - 1];
+            document.getElementById('unlock-img').src = data.image_url;
+            document.getElementById('unlock-title').innerText = `Lv.${level} ${data.name}`;
+            document.getElementById('unlock-desc').innerText = data.description;
+            unlockModal.style.display = 'flex';
+        }
+        document.getElementById('unlockCloseBtn').onclick = () => unlockModal.style.display = 'none';
+
+        // (2) 도감 열기/닫기
+        bookBtn.onclick = () => {
+            renderBook(); // 도감 내용 새로고침
+            bookModal.style.display = 'flex';
+        };
+        document.getElementById('bookCloseTopBtn').onclick = () => bookModal.style.display = 'none';
+
+        // (3) 도감 내용 그리기 (Locked/Unlocked 처리)
+        function renderBook() {
+            const grid = document.getElementById('bookGrid');
+            grid.innerHTML = ''; // 초기화
+
+            pigeonTypes.forEach(data => {
+                const slot = document.createElement('div');
+                
+                // 해금 여부 확인
+                if (data.level <= maxUnlockedLevel) {
+                    // 해금됨: 이미지 보이고 클릭 가능
+                    slot.classList.add('book-item', 'unlocked');
+                    slot.innerHTML = `
+                        <img src="${data.image_url}">
+                        <div class="level-badge">${data.level}</div>
+                    `;
+                    slot.onclick = () => showDetailModal(data);
+                } else {
+                    // 잠김: 물음표 표시
+                    slot.classList.add('book-item', 'locked');
+                    slot.innerHTML = `<div style="font-size:24px; color:#aaa;">?</div><div class="level-badge">${data.level}</div>`;
+                }
+                grid.appendChild(slot);
+            });
+        }
+
+        // (4) 도감 상세 보기 모달
+        function showDetailModal(data) {
+            document.getElementById('detail-img').src = data.image_url;
+            document.getElementById('detail-title').innerText = `Lv.${data.level} ${data.name}`;
+            document.getElementById('detail-desc').innerText = data.description;
+            detailModal.style.display = 'flex';
+        }
+        document.getElementById('detailCloseBtn').onclick = () => detailModal.style.display = 'none';
+
+        // 모달 바깥 클릭 시 닫기
+        window.onclick = (e) => {
+            if (e.target == unlockModal) unlockModal.style.display = 'none';
+            if (e.target == bookModal) bookModal.style.display = 'none';
+            if (e.target == detailModal) detailModal.style.display = 'none';
+        }
+
+        // 게임 시작 시 알 2개 생성
         setTimeout(() => {
-            createItem(1);
             createItem(1);
             createItem(1);
         }, 100);
