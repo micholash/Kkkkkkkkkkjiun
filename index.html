@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>야생의 비둘기 키우기</title>
+    <title>야생의 정지운 키우기</title>
     <style>
         /* --- CSS 스타일 --- */
         :root {
@@ -208,7 +208,7 @@
 <body>
 
     <div class="header">
-        <h1>🕊️ 야생의 비둘기</h1>
+        <h1>🕊️ 야생의 정지운</h1>
         <div class="score-board">
             최고 레벨: <span id="max-level">0</span>
         </div>
@@ -225,7 +225,7 @@
     <div id="unlockModal" class="modal">
         <div class="modal-content">
             <span class="modal-badge">✨ NEW! 새로운 발견!</span><br>
-            <img id="unlock-img" class="modal-image" src="" alt="비둘기">
+            <img id="unlock-img" class="modal-image" src="" alt="정지운">
             <div id="unlock-title" class="modal-title"></div>
             <div id="unlock-desc" class="modal-desc"></div>
             <button class="confirm-btn" id="unlockCloseBtn">확인</button>
@@ -235,7 +235,7 @@
     <div id="bookModal" class="modal">
         <div class="modal-content">
             <button class="close-btn-top" id="bookCloseTopBtn">&times;</button>
-            <div class="modal-title">비둘기 도감</div>
+            <div class="modal-title">정지운 도감</div>
             <p style="font-size:12px; color:#888; margin-bottom:15px;">터치하여 설명을 확인하세요.</p>
             <div class="book-grid" id="bookGrid"></div>
         </div>
@@ -243,7 +243,7 @@
 
     <div id="detailModal" class="modal">
         <div class="modal-content">
-            <img id="detail-img" class="modal-image" src="" alt="비둘기">
+            <img id="detail-img" class="modal-image" src="" alt="정지운">
             <div id="detail-title" class="modal-title"></div>
             <div id="detail-desc" class="modal-desc"></div>
             <button class="confirm-btn" id="detailCloseBtn">닫기</button>
@@ -253,14 +253,14 @@
     <script>
         // ★ 데이터 설정 (깃허브에 img1.png ~ img19.png, img523.png를 올려야 함) ★
         const pigeonTypes = [
-            { level: 1, img: "img1.png", name: "비둘기 알", desc: "아직은 평범한 알입니다." },
+            { level: 1, img: "img1.png", name: "정지운 알", desc: "아직은 평범한 알입니다." },
             { level: 2, img: "img2.png", name: "깨진 알", desc: "금이 갔습니다! 곧 나옵니다." },
             { level: 3, img: "img3.png", name: "아기 새", desc: "삐약삐약! 귀여운 아기 새입니다." },
-            { level: 4, img: "img4.png", name: "비둘기", desc: "흔히 보는 평범한 비둘기입니다." },
+            { level: 4, img: "img4.png", name: "정지운", desc: "흔히 보는 평범한 정지운입니다." },
             { level: 5, img: "img5.png", name: "빵둘기", desc: "빵을 너무 좋아해 몸이 변했습니다." },
             { level: 6, img: "img6.png", name: "닭둘기", desc: "너무 많이 먹어 날 수 없습니다." },
             { level: 7, img: "img7.png", name: "앵무둘기", desc: "화려한 색으로 염색했습니다." },
-            { level: 8, img: "img8.png", name: "백조둘기", desc: "우아함을 추구하는 비둘기입니다." },
+            { level: 8, img: "img8.png", name: "백조둘기", desc: "우아함을 추구하는 정지운입니다." },
             { level: 9, img: "img9.png", name: "홍학둘기", desc: "다리가 길어지고 핑크색이 되었습니다." },
             { level: 10, img: "img10.png", name: "공작둘기", desc: "관심받기를 좋아하는 관종입니다." },
             { level: 11, img: "img11.png", name: "부엉둘기", desc: "밤에만 활동하는 야행성입니다." },
@@ -268,7 +268,7 @@
             { level: 13, img: "img13.png", name: "오리둘기", desc: "물갈퀴가 생겨 수영을 잘합니다." },
             { level: 14, img: "img14.png", name: "박쥐둘기", desc: "동굴에 서식하며 초음파를 씁니다." },
             { level: 15, img: "img15.png", name: "용둘기", desc: "전설 속의 존재가 되었습니다." },
-            { level: 16, img: "img16.png", name: "전투기", desc: "음속으로 날아가는 기계 비둘기입니다." },
+            { level: 16, img: "img16.png", name: "전투기", desc: "음속으로 날아가는 기계 정지운입니다." },
             { level: 17, img: "img17.png", name: "헬기", desc: "제자리 비행이 가능합니다." },
             { level: 18, img: "img18.png", name: "로켓", desc: "우주로 갈 준비를 마쳤습니다." },
             { level: 19, img: "img19.png", name: "UFO", desc: "외계 문명의 힘을 얻었습니다." },
@@ -352,7 +352,7 @@
 
         spawnBtn.addEventListener('click', () => {
             if (document.querySelectorAll('.item').length >= 40) {
-                alert("비둘기가 너무 많아요!");
+                alert("정지운이(가) 너무 많아요!");
                 return;
             }
             // ★ 수정됨: 계산된 레벨로 아이템 생성
